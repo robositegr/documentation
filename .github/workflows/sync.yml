@@ -1,1 +1,33 @@
+name: Sync Updates from Upstream
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_repo:
+        description: 'Upstream Repository (π.χ. Autocalls/documentation)'
+        required: true
+        default: 'Autocalls/documentation'
+      confirmation:
+        description: 'Type "update" to confirm'
+        required: true
 
+jobs:
+  sync:
+    runs-to: ubuntu-latest
+    if: github.event.inputs.confirmation == 'update'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Config Git
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+
+      - name: Add Upstream and Sync
+        run: |
+          git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git
+          git fetch upstream
+          git merge upstream/main --allow-unrelated-histories -m "chore: sync with upstream"
+          git push
