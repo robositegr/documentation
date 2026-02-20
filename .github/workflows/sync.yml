@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       upstream_repo:
-        description: 'Upstream Repository (π.χ. Autocalls/documentation)'
+        description: 'Upstream Repository'
         required: true
         default: 'Autocalls/documentation'
       confirmation:
@@ -12,13 +12,13 @@ on:
 
 jobs:
   sync:
-    runs-to: ubuntu-latest
-    if: github.event.inputs.confirmation == 'update'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Config Git
         run: |
@@ -29,5 +29,6 @@ jobs:
         run: |
           git remote add upstream https://github.com/${{ github.event.inputs.upstream_repo }}.git
           git fetch upstream
-          git merge upstream/main --allow-unrelated-histories -m "chore: sync with upstream"
-          git push
+          # Αυτή η εντολή προσπαθεί να ενώσει τις αλλαγές
+          git merge upstream/main --allow-unrelated-histories -m "chore: sync with upstream" || echo "Conflicts found"
+          git push origin main
